@@ -31,7 +31,7 @@ with open('src/sos_javascript/_version.py') as version:
 
 setup(name = "sos-javascript",
     version = __version__,
-    description = 'SoS Notebook extension for languages Julia',
+    description = 'SoS Notebook extension for JavaScript',
     author = 'Bo Peng',
     url = 'https://github.com/vatlab/SOS',
     author_email = 'bpeng@mdanderson.org',
