@@ -59,8 +59,6 @@ script:
 after_success:
     - 'if [ $TRAVIS_PYTHON_VERSION == "3.5" ]; then
            coverage combine;
-           ls -l coverage.xml;
-           python-codacy-coverage -r coverage.xml;
            coveralls;
         fi'
 
