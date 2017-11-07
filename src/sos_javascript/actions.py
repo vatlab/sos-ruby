@@ -22,7 +22,7 @@
 
 from sos.actions import SoS_Action, SoS_ExecuteScript
 
-@SoS_Action(run_mode=['prepare', 'run', 'interactive'], acceptable_args=['script', 'args'])
+@SoS_Action(acceptable_args=['script', 'args'])
 def node(script, args='', **kwargs):
     '''Execute specified script with command node. This action accepts common action arguments
     such as input, active, workdir, docker_image and args. In particular, content of one or
