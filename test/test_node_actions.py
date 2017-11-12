@@ -26,7 +26,7 @@ import shutil
 from sos.parser import SoS_Script
 from sos.utils import env
 from sos.workflow_executor import Base_Executor
-from sos.targets import FileTarget
+from sos.targets import file_target
 
 
 class TestActions(unittest.TestCase):
