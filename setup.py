@@ -55,13 +55,10 @@ setup(name = "sos-javascript",
     packages = find_packages('src'),
     package_dir = {'': 'src'},
     install_requires=[
-          'sos>=0.9.10.0',
+          'sos>=0.9.12.0',
           'sos-notebook',
       ],
     entry_points= '''
-[sos_actions]
-node = sos_javascript.actions:node
-
 [sos_languages]
 JavaScript = sos_javascript.kernel:sos_JavaScript
 '''
