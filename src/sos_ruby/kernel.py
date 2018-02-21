@@ -40,7 +40,7 @@ __get_sos_vars = function() {
 #
 #  support for %get
 #
-#  Converting a Python object to a JSON format to be loaded by JavaScript
+#  Converting a Python object to a JSON format to be loaded by Ruby
 #
 def _JS_repr(obj):
     try:
@@ -61,12 +61,12 @@ def _JS_repr(obj):
             return 'Unsupported seralizable data {} with type {}'.format(short_repr(obj), obj.__class__.__name__)
 
 
-class sos_JavaScript:
-    supported_kernels = {'JavaScript': ['javascript', 'nodejs'], 'TypeScript': ['typescript']}
+class sos_Ruby:
+    supported_kernels = {'Ruby': ['iruby']}
     background_color = '#c8e1ae'
     options = {}
 
-    def __init__(self, sos_kernel, kernel_name='javascript'):
+    def __init__(self, sos_kernel, kernel_name='iruby'):
         self.sos_kernel = sos_kernel
         self.kernel_name = kernel_name
         self.init_statements = JS_init_statement

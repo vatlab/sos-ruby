@@ -1,4 +1,4 @@
-#!/usr/bin/env javascript
+#!/usr/bin/env ruby
 #
 # This file is part of Script of Scripts (sos), a workflow system
 # for the execution of commands and scripts in different languages.
@@ -23,15 +23,15 @@
 from setuptools import find_packages, setup
 
 # obtain version of SoS
-with open('src/sos_javascript/_version.py') as version:
+with open('src/sos_ruby/_version.py') as version:
     for line in version:
         if line.startswith('__version__'):
             __version__ = eval(line.split('=')[1])
             break
 
-setup(name = "sos-javascript",
+setup(name = "sos-ruby",
     version = __version__,
-    description = 'SoS Notebook extension for JavaScript',
+    description = 'SoS Notebook extension for Ruby',
     author = 'Bo Peng',
     url = 'https://github.com/vatlab/SOS',
     author_email = 'bpeng@mdanderson.org',
@@ -60,7 +60,7 @@ setup(name = "sos-javascript",
       ],
     entry_points= '''
 [sos_languages]
-JavaScript = sos_javascript.kernel:sos_JavaScript
+Ruby = sos_ruby.kernel:sos_Ruby
 '''
 )
 
