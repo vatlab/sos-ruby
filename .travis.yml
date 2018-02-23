@@ -35,7 +35,7 @@ before_install:
 
     # Ruby
     - sudo apt install libtool libffi-dev ruby ruby-dev make
-    - sudo apt install libzmq3-dev libczmq-dev
+    - sudo apt install libzmq3-dev libzmq-dev
     - gem install cztop iruby
     - iruby register --force
 
