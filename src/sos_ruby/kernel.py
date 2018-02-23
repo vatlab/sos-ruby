@@ -23,17 +23,8 @@
 from sos.utils import short_repr, env
 import json
 
-JS_init_statement = '''
-__get_sos_vars = function() {
-    vars = []
-    for(v in this) {
-        if (typeof v.startsWith === "function" && v.startsWith('sos') )
-        {
-            vars.push(v);
-        }
-    }
-    return vars;
-}
+Ruby_init_statement = '''
+
 
 '''
 
@@ -62,14 +53,14 @@ def _JS_repr(obj):
 
 
 class sos_Ruby:
-    supported_kernels = {'Ruby': ['iruby']}
-    background_color = '#c8e1ae'
+    supported_kernels = {'Ruby': ['ruby']}
+    background_color = '#EA5745'
     options = {}
 
-    def __init__(self, sos_kernel, kernel_name='iruby'):
+    def __init__(self, sos_kernel, kernel_name='ruby'):
         self.sos_kernel = sos_kernel
         self.kernel_name = kernel_name
-        self.init_statements = JS_init_statement
+        self.init_statements = Ruby_init_statement
 
     def get_vars(self, names):
         for name in names:
