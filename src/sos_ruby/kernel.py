@@ -3,6 +3,7 @@
 # Copyright (c) Bo Peng and the University of Texas MD Anderson Cancer Center
 # Distributed under the terms of the 3-clause BSD License.
 
+from collections import Sequence
 from sos.utils import short_repr, env
 import json
 
@@ -53,7 +54,7 @@ class sos_Ruby:
         elif isinstance(obj, str):
             return '"""' + obj + '"""'
         elif isinstance(obj, complex):
-            return 'complex(' + str(obj.real) + ',' + str(obj.imag) + ')'
+            return 'Complex(' + str(obj.real) + ',' + str(obj.imag) + ')'
         elif isinstance(obj, Sequence):
             if len(obj) == 0:
                 return '[]'
@@ -62,7 +63,7 @@ class sos_Ruby:
         elif obj is None:
             return 'Nil'
         elif isinstance(obj, dict):
-            return '{' + ','.join('"{}" => {}'.format(x, self_Ruby_repr(y)) for x,y in obj.items()) + '}'
+            return '{' + ','.join('"{}" => {}'.format(x, self.Ruby_repr(y)) for x,y in obj.items()) + '}'
         elif isinstance(obj, set):
             return 'Set[' + ','.join(self._Ruby_repr(x) for x in obj) + ']'
         '''
