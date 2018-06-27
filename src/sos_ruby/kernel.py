@@ -18,7 +18,7 @@ def __Ruby_py_repr(obj)
   elsif obj.instance_of? FalseClass
     return "False"
   elsif obj.instance_of? Float
-    return ""
+    return obj.to_s
   elsif obj.nil?
     "None"
   end
