@@ -22,7 +22,7 @@ def __Ruby_py_repr(obj)
   elsif obj.nil?
     "None"
   elsif obj.instance_of? Range
-    return "range(" + obj.min().inspect + "," + obj.max().inspect + ")"
+    return "range(" + obj.min().inspect + "," + (obj.max()+1).inspect + ")"
   elsif obj.instance_of? Array
     return obj.map { |indivial_var| __Ruby_py_repr(indivial_var) }
   end
