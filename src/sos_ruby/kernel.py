@@ -10,7 +10,7 @@ import json
 Ruby_init_statement = '''
 def __Ruby_py_repr(obj)
   if obj.instance_of? Integer
-    return obj.to_s
+    return obj.inspect
   elsif obj.instance_of? String
     return obj
   elsif obj.instance_of? TrueClass
@@ -18,12 +18,13 @@ def __Ruby_py_repr(obj)
   elsif obj.instance_of? FalseClass
     return "False"
   elsif obj.instance_of? Float
-    return obj.to_s
+    return obj.inspect
   elsif obj.nil?
     "None"
+  elsif obj.instance_of? Array
+    return obj.map { |indivial_var| __Ruby_py_repr(indivial_var) }
   end
 end
-
 '''
 
 #
