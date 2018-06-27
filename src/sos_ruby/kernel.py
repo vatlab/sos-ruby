@@ -58,6 +58,8 @@ class sos_Ruby:
             return '"""' + obj + '"""'
         elif isinstance(obj, complex):
             return 'Complex(' + str(obj.real) + ',' + str(obj.imag) + ')'
+        elif isinstance(obj, range):
+            return '(' + repr(min(obj)) + '..' + repr((max(obj)+1)) + ')'
         elif isinstance(obj, Sequence):
             if len(obj) == 0:
                 return '[]'
