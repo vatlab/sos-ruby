@@ -25,6 +25,9 @@ def __Ruby_py_repr(obj)
     return "range(" + obj.min().inspect + "," + (obj.max()+1).inspect + ")"
   elsif obj.instance_of? Array
     return obj.map { |indivial_var| __Ruby_py_repr(indivial_var) }
+  elsif obj.instance_of? Daru::DataFrame
+    #return "import pandas\n" + "pandas.DataFrame(" + "{" + obj.vectors.to_a.map{|x| "\"" + x.to_s + "\":" + obj[x].to_a.map{|y|  __Ruby_py_repr(y)}.to_s}.join(",") + "})"
+    return "pandas.DataFrame(" + "{" + obj.vectors.to_a.map{|x| "\"" + x.to_s + "\":" + obj[x].to_a.map{|y|  __Ruby_py_repr(y)}.to_s}.join(",") + "})"
   end
 end
 '''
