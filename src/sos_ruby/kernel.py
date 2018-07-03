@@ -5,6 +5,8 @@
 
 from collections import Sequence
 from sos.utils import short_repr, env
+import numpy
+import pandas
 import json
 
 Ruby_init_statement = '''
