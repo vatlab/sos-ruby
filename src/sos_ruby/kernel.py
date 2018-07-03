@@ -43,15 +43,13 @@ end
 #
 
 
-
-
-
 class sos_Ruby:
-    supported_kernels = {'Ruby': ['Ruby']}
-    background_color = '#EA5745'
+    supported_kernels = {'Ruby': ['ruby']}
+    background_color = '#e8c2be'
     options = {}
+    cd_command = 'Dir.chdir {dir!r}'
 
-    def __init__(self, sos_kernel, kernel_name='Ruby'):
+    def __init__(self, sos_kernel, kernel_name='ruby'):
         self.sos_kernel = sos_kernel
         self.kernel_name = kernel_name
         self.init_statements = Ruby_init_statement
@@ -75,7 +73,7 @@ class sos_Ruby:
         elif obj is None:
             return 'nil'
         elif isinstance(obj, dict):
-            return '{' + ','.join('"{}" => {}'.format(x, self.Ruby_repr(y)) for x,y in obj.items()) + '}'
+            return '{' + ','.join('"{}" => {}'.format(x, self.Ruby_repr(y)) for x, y in obj.items()) + '}'
         elif isinstance(obj, set):
             return 'Set[' + ','.join(self._Ruby_repr(x) for x in obj) + ']'
         '''
@@ -108,7 +106,7 @@ class sos_Ruby:
                     data = obj.copy()
                     # Julia DataFrame does not have index
                     if not isinstance(data.index, pandas.RangeIndex):
-                        self.sos_kernel.warn('Raw index is ignored because Julia DataFrame does not support raw index.') 
+                        self.sos_kernel.warn('Raw index is ignored because Julia DataFrame does not support raw index.')
                     feather.write_dataframe(data, feather_tmp_)
                 except Exception:
                     # if data cannot be written, we try to manipulate data
@@ -129,27 +127,29 @@ class sos_Ruby:
                 return repr('Unsupported datatype {}'.format(short_repr(obj)))
         '''
 
-
-
-
     def get_vars(self, names):
         for name in names:
-            self.sos_kernel.run_cell('{} = {}'.format(name, _Ruby_repr(env.sos_dict[name])), True, False)
+            self.sos_kernel.run_cell('{} = {}'.format(
+                name, _Ruby_repr(env.sos_dict[name])), True, False)
 
     def put_vars(self, items, to_kernel=None):
         # first let us get all variables with names starting with sos
-        response = self.sos_kernel.get_response('__get_sos_vars()', ('execute_result'))[0][1]
+        response = self.sos_kernel.get_response(
+            '__get_sos_vars()', ('execute_result'))[0][1]
         expr = response['data']['text/plain']
         items += eval(expr)
 
         if not items:
             return {}
 
-        py_repr = 'JSON.stringify({{ {} }})'.format(','.join('"{0}":{0}'.format(x) for x in items))
-        response = self.sos_kernel.get_response(py_repr, ('execute_result'))[0][1]
+        py_repr = 'JSON.stringify({{ {} }})'.format(
+            ','.join('"{0}":{0}'.format(x) for x in items))
+        response = self.sos_kernel.get_response(
+            py_repr, ('execute_result'))[0][1]
         expr = response['data']['text/plain']
         try:
             return json.loads(eval(expr))
         except Exception as e:
-            self.sos_kernel.warn('Failed to convert {} to Python object: {}'.format(expr, e))
+            self.sos_kernel.warn(
+                'Failed to convert {} to Python object: {}'.format(expr, e))
             return {}
