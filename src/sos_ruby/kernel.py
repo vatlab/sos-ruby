@@ -20,7 +20,7 @@ def __Ruby_py_repr(obj)
   elsif obj.instance_of? Float
     return obj.inspect
   elsif obj.nil?
-    "None"
+    return "None"
   elsif obj.instance_of? Range
     return "range(" + obj.min().inspect + "," + (obj.max()+1).inspect + ")"
   elsif obj.instance_of? Array
