@@ -28,6 +28,8 @@ def __Ruby_py_repr(obj)
   elsif obj.instance_of? Daru::DataFrame
     #return "import pandas\n" + "pandas.DataFrame(" + "{" + obj.vectors.to_a.map{|x| "\"" + x.to_s + "\":" + obj[x].to_a.map{|y|  __Ruby_py_repr(y)}.to_s}.join(",") + "})"
     return "pandas.DataFrame(" + "{" + obj.vectors.to_a.map{|x| "\"" + x.to_s + "\":" + obj[x].to_a.map{|y|  __Ruby_py_repr(y)}.to_s}.join(",") + "})"
+  elsif obj.instance_of? NMatrix
+    return "numpy.matrix(" + obj.to_a.to_s + ")"
   end
 end
 '''
