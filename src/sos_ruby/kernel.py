@@ -4,7 +4,7 @@
 # Distributed under the terms of the 3-clause BSD License.
 
 from collections import Sequence
-from sos.utils import short_repr, env
+from sos.utils import short_repr, env, log_to_file
 import numpy
 import pandas
 import json
@@ -28,7 +28,6 @@ def __Ruby_py_repr(obj)
   elsif obj.instance_of? Array
     return obj.map { |indivial_var| __Ruby_py_repr(indivial_var) }
   elsif obj.instance_of? Daru::DataFrame
-    #return "import pandas\n" + "pandas.DataFrame(" + "{" + obj.vectors.to_a.map{|x| "\"" + x.to_s + "\":" + obj[x].to_a.map{|y|  __Ruby_py_repr(y)}.to_s}.join(",") + "})"
     return "pandas.DataFrame(" + "{" + obj.vectors.to_a.map{|x| "\"" + x.to_s + "\":" + obj[x].to_a.map{|y|  __Ruby_py_repr(y)}.to_s}.join(",") + "})"
   elsif obj.instance_of? NMatrix
     return "numpy.matrix(" + obj.to_a.to_s + ")"
@@ -76,6 +75,8 @@ class sos_Ruby:
             return '{' + ','.join('"{}" => {}'.format(x, self.Ruby_repr(y)) for x, y in obj.items()) + '}'
         elif isinstance(obj, set):
             return 'Set[' + ','.join(self._Ruby_repr(x) for x in obj) + ']'
+        else:
+            return repr('Unsupported datatype {}'.format(short_repr(obj)))
         '''
         else:
             if isinstance(obj, (numpy.intc, numpy.intp, numpy.int8, numpy.int16, numpy.int32, numpy.int64,\
@@ -129,27 +130,52 @@ class sos_Ruby:
 
     def get_vars(self, names):
         for name in names:
-            self.sos_kernel.run_cell('{} = {}'.format(
-                name, _Ruby_repr(env.sos_dict[name])), True, False)
+            ruby_repr = self._Ruby_repr(env.sos_dict[name])
+            log_to_file(ruby_repr)
+            if self.sos_kernel._debug_mode:
+                self.sos_kernel.warn(ruby_repr)
+            self.sos_kernel.run_cell(f'{newname} <- {ruby_repr}', True, False,
+                                     on_error=f'Failed to get variable {name} to R')
 
     def put_vars(self, items, to_kernel=None):
         # first let us get all variables with names starting with sos
-        response = self.sos_kernel.get_response(
-            '__get_sos_vars()', ('execute_result'))[0][1]
-        expr = response['data']['text/plain']
-        items += eval(expr)
+        response = self.sos_kernel.get_response('print local_variables', ('stream',), name=('stdout',))[0][1]
+        all_vars = eval(response['text'])
+        all_vars = [all_vars] if isinstance(all_vars, str) else all_vars
+
+        items += [x for x in all_vars if x.startswith('sos')]
+
+        for item in items:
+            if '.' in item:
+                self.sos_kernel.warn(f'Variable {item} is put to SoS as {item.replace(".", "_")}')
 
         if not items:
             return {}
 
-        py_repr = 'JSON.stringify({{ {} }})'.format(
-            ','.join('"{0}":{0}'.format(x) for x in items))
-        response = self.sos_kernel.get_response(
-            py_repr, ('execute_result'))[0][1]
-        expr = response['data']['text/plain']
-        try:
-            return json.loads(eval(expr))
-        except Exception as e:
-            self.sos_kernel.warn(
-                'Failed to convert {} to Python object: {}'.format(expr, e))
-            return {}
+        py_repr = f'cat(..py.repr(list({",".join("{0}={0}".format(x) for x in items)})))'
+        response = self.sos_kernel.get_response(py_repr, ('stream',), name=('stdout',))[0][1]
+        expr = response['text']
+
+        if to_kernel in ('Python2', 'Python3'):
+            # directly to python3
+            return '{}\n{}\nglobals().update({})'.format('from feather import read_dataframe\n' if 'read_dataframe' in expr else '',
+                    'import numpy' if 'numpy' in expr else '', expr)
+        # to sos or any other kernel
+        else:
+            # irkernel (since the new version) does not produce execute_result, only
+            # display_data
+            try:
+                if 'read_dataframe' in expr:
+                    # imported to be used by eval
+                    from feather import read_dataframe
+                    # suppress flakes warning
+                    read_dataframe
+                # evaluate as raw string to correctly handle \\ etc
+                return eval(expr)
+            except Exception as e:
+                self.sos_kernel.warn(f'Failed to evaluate {expr!r}: {e}')
+                return None
+
+    def sessioninfo(self):
+        response = self.sos_kernel.get_response(r'RUBY_VERSION', ('stream',), name=('stdout',))
+        return response[1]['text']
