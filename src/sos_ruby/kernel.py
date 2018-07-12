@@ -145,13 +145,6 @@ class sos_Ruby:
 
         items += [x for x in all_vars if x.startswith('sos')]
 
-        for item in items:
-            if '.' in item:
-                self.sos_kernel.warn(f'Variable {item} is put to SoS as {item.replace(".", "_")}')
-
-        if not items:
-            return {}
-
         py_repr = f'cat(..py.repr(list({",".join("{0}={0}".format(x) for x in items)})))'
         response = self.sos_kernel.get_response(py_repr, ('stream',), name=('stdout',))[0][1]
         expr = response['text']
