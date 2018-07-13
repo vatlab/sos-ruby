@@ -130,12 +130,10 @@ class sos_Ruby:
 
     def get_vars(self, names):
         for name in names:
+            newname = name
             ruby_repr = self._Ruby_repr(env.sos_dict[name])
-            log_to_file(ruby_repr)
-            if self.sos_kernel._debug_mode:
-                self.sos_kernel.warn(ruby_repr)
-            self.sos_kernel.run_cell(f'{newname} <- {ruby_repr}', True, False,
-                                     on_error=f'Failed to get variable {name} to Ruby')
+            self.sos_kernel.run_cell('{} = {}'.format(newname, ruby_repr), True, False,
+                                     on_error='Failed to put variable {} to Ruby'.format(name))
 
     def put_vars(self, items, to_kernel=None):
         # first let us get all variables with names starting with sos
