@@ -14,7 +14,7 @@ def __Ruby_py_repr(obj)
   if obj.instance_of? Integer
     return obj.inspect
   elsif obj.instance_of? String
-    return obj
+    return obj.inspect
   elsif obj.instance_of? TrueClass
     return "True"
   elsif obj.instance_of? FalseClass
@@ -26,7 +26,7 @@ def __Ruby_py_repr(obj)
   elsif obj.instance_of? Range
     return "range(" + obj.min().inspect + "," + (obj.max()+1).inspect + ")"
   elsif obj.instance_of? Array
-    return obj.map { |indivial_var| __Ruby_py_repr(indivial_var) }
+    return '[' + (obj.map { |indivial_var| __Ruby_py_repr(indivial_var) } ).join(",") + ']'
   elsif obj.instance_of? Daru::DataFrame
     return "pandas.DataFrame(" + "{" + obj.vectors.to_a.map{|x| "\"" + x.to_s + "\":" + obj[x].to_a.map{|y|  __Ruby_py_repr(y)}.to_s}.join(",") + "})"
   elsif obj.instance_of? NMatrix
@@ -146,13 +146,14 @@ class sos_Ruby:
             pass
         res = {}
         for item in items:
-            py_repr = '__Ruby_py_repr({})'.format(item)
-            response = self.sos_kernel.get_response(py_repr, ('execute_result',))[0][1]
-            expr = response['data']['text/plain']
+            py_repr = 'printf(__Ruby_py_repr({}))'.format(item)
+            response = self.sos_kernel.get_response(py_repr, ('stream',), name=('stdout',))[0][1]
+            expr = response['text']
+            self.sos_kernel.warn(repr(expr))
 
             try:
                 # evaluate as raw string to correctly handle \\ etc
-                res[item] = eval(eval(expr))
+                res[item] = eval(expr)
             except Exception as e:
                 self.sos_kernel.warn('Failed to evaluate {!r}: {}'.format(expr, e))
                 return None
@@ -160,4 +161,4 @@ class sos_Ruby:
 
     def sessioninfo(self):
         response = self.sos_kernel.get_response(r'RUBY_VERSION', ('stream',), name=('stdout',))
-        return response[1]['text']
+        return response['text']
