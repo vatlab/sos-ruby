@@ -135,39 +135,30 @@ class sos_Ruby:
             if self.sos_kernel._debug_mode:
                 self.sos_kernel.warn(ruby_repr)
             self.sos_kernel.run_cell(f'{newname} <- {ruby_repr}', True, False,
-                                     on_error=f'Failed to get variable {name} to R')
+                                     on_error=f'Failed to get variable {name} to Ruby')
 
     def put_vars(self, items, to_kernel=None):
         # first let us get all variables with names starting with sos
-        response = self.sos_kernel.get_response('print local_variables', ('stream',), name=('stdout',))[0][1]
-        all_vars = eval(response['text'])
-        all_vars = [all_vars] if isinstance(all_vars, str) else all_vars
+        try:
+            response = self.sos_kernel.get_response('print local_variables', ('stream',), name=('stdout',))[0][1]
+            all_vars = response['text']
+            items += [x for x in all_vars[1:-1].split(", ") if x.startswith(":sos")]
+        except:
+            # if there is no variable with name sos, the command will not produce any output
+            pass
+        res = {}
+        for item in items:
+            py_repr = '__Ruby_py_repr({})'.format(item)
+            response = self.sos_kernel.get_response(py_repr, ('execute_result',))[0][1]
+            expr = response['data']['text/plain']
 
-        items += [x for x in all_vars if x.startswith('sos')]
-
-        py_repr = f'cat(..py.repr(list({",".join("{0}={0}".format(x) for x in items)})))'
-        response = self.sos_kernel.get_response(py_repr, ('stream',), name=('stdout',))[0][1]
-        expr = response['text']
-
-        if to_kernel in ('Python2', 'Python3'):
-            # directly to python3
-            return '{}\n{}\nglobals().update({})'.format('from feather import read_dataframe\n' if 'read_dataframe' in expr else '',
-                    'import numpy' if 'numpy' in expr else '', expr)
-        # to sos or any other kernel
-        else:
-            # irkernel (since the new version) does not produce execute_result, only
-            # display_data
             try:
-                if 'read_dataframe' in expr:
-                    # imported to be used by eval
-                    from feather import read_dataframe
-                    # suppress flakes warning
-                    read_dataframe
                 # evaluate as raw string to correctly handle \\ etc
-                return eval(expr)
+                res[item] = eval(eval(expr))
             except Exception as e:
-                self.sos_kernel.warn(f'Failed to evaluate {expr!r}: {e}')
+                self.sos_kernel.warn('Failed to evaluate {!r}: {}'.format(expr, e))
                 return None
+        return res
 
     def sessioninfo(self):
         response = self.sos_kernel.get_response(r'RUBY_VERSION', ('stream',), name=('stdout',))
