@@ -72,7 +72,7 @@ class sos_Ruby:
         elif obj is None:
             return 'nil'
         elif isinstance(obj, dict):
-            return '{' + ','.join('"{}" => {}'.format(x, self.Ruby_repr(y)) for x, y in obj.items()) + '}'
+            return '{' + ','.join('"{}" => {}'.format(x, self._Ruby_repr(y)) for x, y in obj.items()) + '}'
         elif isinstance(obj, set):
             return 'Set[' + ','.join(self._Ruby_repr(x) for x in obj) + ']'
         else:
