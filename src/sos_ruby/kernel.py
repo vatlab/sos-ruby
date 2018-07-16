@@ -30,7 +30,7 @@ def __Ruby_py_repr(obj)
   elsif obj.instance_of? Array
     return '[' + (obj.map { |indivial_var| __Ruby_py_repr(indivial_var) } ).join(",") + ']'
   elsif obj.instance_of? Daru::DataFrame
-    return "pandas.DataFrame(" + "{" + obj.vectors.to_a.map{|x| "\"" + x.to_s + "\":" + obj[x].to_a.map{|y|  __Ruby_py_repr(y)}.to_s}.join(",") + "}," + "index=" + obj.index.to_a.to_s + ")"
+    return "pandas.DataFrame(" + "{" + (obj.vectors.to_a.map { |x| "\"" + x.to_s + "\":" + (obj[x].to_a.map { |y|  __Ruby_py_repr(y) }).to_s } ).join(",") + "}," + "index=" + obj.index.to_a.to_s + ")"
   elsif obj.instance_of? NMatrix
     return "numpy.matrix(" + obj.to_a.to_s + ")"
   end
@@ -78,57 +78,22 @@ class sos_Ruby:
         elif isinstance(obj, set):
             return 'Set[' + ','.join(self._Ruby_repr(x) for x in obj) + ']'
         else:
-            return repr('Unsupported datatype {}'.format(short_repr(obj)))
-        '''
-        else:
             if isinstance(obj, (numpy.intc, numpy.intp, numpy.int8, numpy.int16, numpy.int32, numpy.int64,\
-                    numpy.uint8, numpy.uint16, numpy.uint32, numpy.uint64, numpy.float16, numpy.float32)):
+                    numpy.uint8, numpy.uint16, numpy.uint32, numpy.uint64, numpy.float16, numpy.float32, numpy.float64)):
                 return repr(obj)
-            # need to specify Float64() as the return to Julia in order to avoid losing precision
-            elif isinstance(obj, numpy.float64):
-                return 'Float64(' + obj + ')'
             elif isinstance(obj, numpy.matrixlib.defmatrix.matrix):
-                try:
-                    import feather
-                except ImportError:
-                    raise UsageError('The feather-format module is required to pass numpy matrix as julia matrix(array)'
-                        'See https://github.com/wesm/feather/tree/master/python for details.')
-                feather_tmp_ = tempfile.NamedTemporaryFile(suffix='.feather', delete=False).name
-                feather.write_dataframe(pandas.DataFrame(obj).copy(), feather_tmp_)
-                return 'Array(Feather.read("' + feather_tmp_ + '", nullable=false))'
+                return 'N' + repr(obj.tolist())
             elif isinstance(obj, numpy.ndarray):
-                return '[' + ','.join(self._julia_repr(x) for x in obj) + ']'
+                return repr(obj.tolist())
             elif isinstance(obj, pandas.DataFrame):
-                try:
-                    import feather
-                except ImportError:
-                    raise UsageError('The feather-format module is required to pass pandas DataFrame as julia.DataFrames'
-                        'See https://github.com/wesm/feather/tree/master/python for details.')
-                feather_tmp_ = tempfile.NamedTemporaryFile(suffix='.feather', delete=False).name
-                try:
-                    data = obj.copy()
-                    # Julia DataFrame does not have index
-                    if not isinstance(data.index, pandas.RangeIndex):
-                        self.sos_kernel.warn('Raw index is ignored because Julia DataFrame does not support raw index.')
-                    feather.write_dataframe(data, feather_tmp_)
-                except Exception:
-                    # if data cannot be written, we try to manipulate data
-                    # frame to have consistent types and try again
-                    for c in data.columns:
-                        if not homogeneous_type(data[c]):
-                            data[c] = [str(x) for x in data[c]]
-                    feather.write_dataframe(data, feather_tmp_)
-                    # use {!r} for path because the string might contain c:\ which needs to be
-                    # double quoted.
                 return 'Feather.read("' + feather_tmp_ + '", nullable=false)'
             elif isinstance(obj, pandas.Series):
                 dat=list(obj.values)
                 ind=list(obj.index.values)
-                ans='NamedArray(' + '[' + ','.join(self._julia_repr(x) for x in dat) + ']' + ',([' + ','.join(self._julia_repr(y) for y in ind) + '],))'
-                return ans.replace("'",'"')
+                ans="{" + ",".join([repr(x) + "=>" + repr(y) for x, y in zip(ind, dat)]) + "}"
+                return ans
             else:
                 return repr('Unsupported datatype {}'.format(short_repr(obj)))
-        '''
 
     def get_vars(self, names):
         for name in names:
