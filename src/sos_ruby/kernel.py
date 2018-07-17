@@ -9,9 +9,12 @@ import numpy
 import pandas
 import json
 
-Ruby_init_statement = '''
+Ruby_init_statement = r'''
+
 require 'daru'
+
 require 'nmatrix'
+
 def __Ruby_py_repr(obj)
   if obj.instance_of? Integer
     return obj.inspect
@@ -30,7 +33,12 @@ def __Ruby_py_repr(obj)
   elsif obj.instance_of? Array
     return '[' + (obj.map { |indivial_var| __Ruby_py_repr(indivial_var) } ).join(",") + ']'
   elsif obj.instance_of? Daru::DataFrame
-    return "pandas.DataFrame(" + "{" + (obj.vectors.to_a.map { |x| "\"" + x.to_s + "\":" + (obj[x].to_a.map { |y|  eval(__Ruby_py_repr(y)) }).to_s } ).join(",") + "}," + "index=" + obj.index.to_a.to_s + ")"
+    _beginning_result_string_dataframe_from_ruby = "pandas.DataFrame(" + "{"
+    _context_result_string_dataframe_from_ruby = (obj.vectors.to_a.map { |x| "\"" + x.to_s + "\":" + (obj[x].to_a.map { |y|  eval(__Ruby_py_repr(y)) }).to_s } ).join(",")
+    _indexing_result_string_dataframe_from_ruby = "}," + "index=" + obj.index.to_a.to_s + ")"
+    _result_string_dataframe_from_ruby = _beginning_result_string_dataframe_from_ruby + _context_result_string_dataframe_from_ruby + _indexing_result_string_dataframe_from_ruby
+    return _result_string_dataframe_from_ruby
+    print(_result_string_dataframe_from_ruby)
   elsif obj.instance_of? NMatrix
     return "numpy.matrix(" + obj.to_a.to_s + ")"
   end
@@ -123,7 +131,7 @@ class sos_Ruby:
             pass
         res = {}
         for item in items:
-            py_repr = 'printf(__Ruby_py_repr({}))'.format(item)
+            py_repr = 'print(__Ruby_py_repr({}))'.format(item)
             response = self.sos_kernel.get_response(py_repr, ('stream',), name=('stdout',))[0][1]
             expr = response['text']
             self.sos_kernel.warn(repr(expr))
