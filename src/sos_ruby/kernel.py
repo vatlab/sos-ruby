@@ -86,7 +86,17 @@ class sos_Ruby:
             elif isinstance(obj, numpy.ndarray):
                 return repr(obj.tolist())
             elif isinstance(obj, pandas.DataFrame):
-                return 'Feather.read("' + feather_tmp_ + '", nullable=false)'
+                _beginning_result_string_dataframe_to_ruby = "Daru::DataFrame.new({"
+                _context_string_dataframe_to_ruby = str(['"'
+                                                        + str(x).replace("'", '"')
+                                                        + '"'
+                                                        + "=>"
+                                                        + str(list(map(lambda y: eval(_Ruby_repr(y)),
+                                                                       obj[x].tolist()))).replace("'", '"')
+                                                        for x in obj.keys().tolist()])[2:-2].replace("\', \'", ", ") + "},"
+                _indexing_result_string_dataframe_to_ruby = "index:" + str(obj.index.values.tolist()).replace("'", '"') + ")"
+                _result_string_dataframe_to_ruby = _beginning_result_string_dataframe_to_ruby + _context_string_dataframe_to_ruby + _indexing_result_string_dataframe_to_ruby
+                return _result_string_dataframe_to_ruby
             elif isinstance(obj, pandas.Series):
                 dat=list(obj.values)
                 ind=list(obj.index.values)
