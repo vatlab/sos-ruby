@@ -30,7 +30,7 @@ def __Ruby_py_repr(obj)
   elsif obj.instance_of? Array
     return '[' + (obj.map { |indivial_var| __Ruby_py_repr(indivial_var) } ).join(",") + ']'
   elsif obj.instance_of? Daru::DataFrame
-    return "pandas.DataFrame(" + "{" + (obj.vectors.to_a.map { |x| "\"" + x.to_s + "\":" + (obj[x].to_a.map { |y|  __Ruby_py_repr(y) }).to_s } ).join(",") + "}," + "index=" + obj.index.to_a.to_s + ")"
+    return "pandas.DataFrame(" + "{" + (obj.vectors.to_a.map { |x| "\"" + x.to_s + "\":" + (obj[x].to_a.map { |y|  eval(__Ruby_py_repr(y)) }).to_s } ).join(",") + "}," + "index=" + obj.index.to_a.to_s + ")"
   elsif obj.instance_of? NMatrix
     return "numpy.matrix(" + obj.to_a.to_s + ")"
   end
