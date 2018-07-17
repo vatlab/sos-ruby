@@ -91,7 +91,7 @@ class sos_Ruby:
                                                         + str(x).replace("'", '"')
                                                         + '"'
                                                         + "=>"
-                                                        + str(list(map(lambda y: eval(_Ruby_repr(y)),
+                                                        + str(list(map(lambda y: eval(self._Ruby_repr(y)),
                                                                        obj[x].tolist()))).replace("'", '"')
                                                         for x in obj.keys().tolist()])[2:-2].replace("\', \'", ", ") + "},"
                 _indexing_result_string_dataframe_to_ruby = "index:" + str(obj.index.values.tolist()).replace("'", '"') + ")"
