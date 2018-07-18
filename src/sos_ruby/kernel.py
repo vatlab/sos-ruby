@@ -66,6 +66,8 @@ class sos_Ruby:
     def _Ruby_repr(self, obj):
         if isinstance(obj, bool):
             return 'true' if obj else 'false'
+        elif isinstance(obj, float) and numpy.isnan(obj):
+            return "Float::NAN"
         elif isinstance(obj, (int, float)):
             return repr(obj)
         elif isinstance(obj, str):
@@ -99,8 +101,17 @@ class sos_Ruby:
                                                         + str(x).replace("'", '"')
                                                         + '"'
                                                         + "=>"
-                                                        + str(list(map(lambda y: eval(self._Ruby_repr(y)),
-                                                                       obj[x].tolist()))).replace("'", '"')
+                                                        + "["
+                                                        + str(
+                                                            ",".join(
+                                                                list(
+                                                                map(
+                                                                    lambda y: self._Ruby_repr(y),
+                                                                       obj[x].tolist()
+                                                                )
+                                                            )
+                                                            )
+                                                        ).replace("'", '"') + "]"
                                                         for x in obj.keys().tolist()])[2:-2].replace("\', \'", ", ") + "},"
                 _indexing_result_string_dataframe_to_ruby = "index:" + str(obj.index.values.tolist()).replace("'", '"') + ")"
                 _result_string_dataframe_to_ruby = _beginning_result_string_dataframe_to_ruby + _context_string_dataframe_to_ruby + _indexing_result_string_dataframe_to_ruby
