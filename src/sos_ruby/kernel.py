@@ -34,13 +34,23 @@ def __Ruby_py_repr(obj)
     return "range(" + obj.min().inspect + "," + (obj.max()+1).inspect + ")"
   elsif obj.instance_of? Array
     return '[' + (obj.map { |indivial_var| __Ruby_py_repr(indivial_var) } ).join(",") + ']'
+  elsif obj.instance_of? Hash
+    _beginning_result_string_hash_from_ruby = "{"
+    _context_result_string_hash_from_ruby = (obj.keys.map do |x|
+                                              if obj[x].instance_of? Array then
+                                                  "\"" + x.to_s + "\":" + (obj[x].to_a.map { |y|  eval(__Ruby_py_repr(y)) }).to_s
+                                              else
+                                                  "\"" + x.to_s + "\":" + (__Ruby_py_repr(obj[x])).to_s
+                                              end
+                                            end).join(",") + "}"
+    _result_string_hash_from_ruby = _beginning_result_string_hash_from_ruby + _context_result_string_hash_from_ruby
+    return _result_string_hash_from_ruby
   elsif obj.instance_of? Daru::DataFrame
     _beginning_result_string_dataframe_from_ruby = "pandas.DataFrame(" + "{"
     _context_result_string_dataframe_from_ruby = (obj.vectors.to_a.map { |x| "\"" + x.to_s + "\":" + (obj[x].to_a.map { |y|  eval(__Ruby_py_repr(y)) }).to_s } ).join(",")
     _indexing_result_string_dataframe_from_ruby = "}," + "index=" + obj.index.to_a.to_s + ")"
     _result_string_dataframe_from_ruby = _beginning_result_string_dataframe_from_ruby + _context_result_string_dataframe_from_ruby + _indexing_result_string_dataframe_from_ruby
     return _result_string_dataframe_from_ruby
-    print(_result_string_dataframe_from_ruby)
   elsif obj.instance_of? NMatrix
     return "numpy.matrix(" + obj.to_a.to_s + ")"
   end
