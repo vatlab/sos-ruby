@@ -53,6 +53,8 @@ def __Ruby_py_repr(obj)
     return _result_string_dataframe_from_ruby
   elsif obj.instance_of? NMatrix
     return "numpy.matrix(" + obj.to_a.to_s + ")"
+  elsif obj.instance_of? Complex
+    return "complex(" + obj.real.inspect + "," + obj.imaginary.inspect + ")"
   end
 end
 '''
