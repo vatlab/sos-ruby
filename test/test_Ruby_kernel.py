@@ -1,7 +1,24 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) Bo Peng and the University of Texas MD Anderson Cancer Center
-# Distributed under the terms of the 3-clause BSD License.
+# This file is part of Script of Scripts (SoS), a workflow system
+# for the execution of commands and scripts in different languages.
+# Please visit https://github.com/vatlab/SOS for more information.
+#
+# Copyright (C) 2016 Bo Peng (bpeng@mdanderson.org)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 
 #
 # NOTE: for some namespace reason, this test can only be tested using
@@ -14,9 +31,9 @@ import os
 import unittest
 from ipykernel.tests.utils import execute, wait_for_idle
 from sos_notebook.test_utils import sos_kernel, get_result, get_display_data, \
-    clear_channels
+    clear_channels, get_std_output
 
-class TestJavaScriptKernel(unittest.TestCase):
+class TestRubyKernel(unittest.TestCase):
     #
     # Beacuse these tests would be called from sos/test, we
     # should switch to this directory so that some location
@@ -30,8 +47,8 @@ class TestJavaScriptKernel(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.olddir)
 
-    def testGetPythonDataFrameFromJavaScript(self):
-        # Python -> R
+    def testGetPythonDataFrameFromRuby(self):
+        # Python -> Ruby
         with sos_kernel() as kc:
             iopub = kc.iopub_channel
             # create a data frame
@@ -43,42 +60,90 @@ arr[::10] = np.nan
 df = pd.DataFrame({'column_{0}'.format(i): arr for i in range(10)})
 ''')
             clear_channels(iopub)
-            execute(kc=kc, code="%use JavaScript")
-            wait_for_idle(kc)
+            execute(kc=kc, code="%use Ruby")
+            _, stderr = get_std_output(iopub)
+            self.assertEqual(stderr, '', "GOT ERROR {}".format(stderr))
             execute(kc=kc, code="%get df")
             wait_for_idle(kc)
-            execute(kc=kc, code="Object.keys(df).length")
+            execute(kc=kc, code="df.size()")
             res = get_display_data(iopub)
             self.assertEqual(res, '1000')
+            execute(kc=kc, code="df.vectors().to_a().size()")
+            res = get_display_data(iopub)
+            self.assertEqual(res, '10')
             execute(kc=kc, code="%use sos")
             wait_for_idle(kc)
+        
+    def testGetPythonMatrixFromRuby(self):
+        # Python -> Ruby
+        with sos_kernel() as kc:
+            iopub = kc.iopub_channel
+            # create a matrix 
+            execute(kc=kc, code='''
+import numpy as np
+mat_var = np.matrix([[1,2],[3,4]])
+''')
+            clear_channels(iopub)
+            execute(kc=kc, code="%use Ruby")
+            wait_for_idle(kc)
+            execute(kc=kc, code="%get mat_var")
+            wait_for_idle(kc)
+            execute(kc=kc, code="mat_var.size()")
+            res = get_display_data(iopub)
+            self.assertEqual(res, '4')
+            execute(kc=kc, code="%use sos")
+            wait_for_idle(kc)
+            #
 
-    def testGetPythonDataFromJavaScript(self):
+    def testGetPythonNoneFromRuby(self):
+        # Python -> Ruby
+        with sos_kernel() as kc:
+            iopub = kc.iopub_channel
+            # create a data frame
+            execute(kc=kc, code='''
+null_var = None
+''')
+            clear_channels(iopub)
+            execute(kc=kc, code="%use Ruby")
+            wait_for_idle(kc)
+            execute(kc=kc, code="%get null_var")
+            wait_for_idle(kc)
+            execute(kc=kc, code="null_var == nil")
+            res = get_display_data(iopub)
+            self.assertEqual(res, 'true')
+            execute(kc=kc, code="%use sos")
+            wait_for_idle(kc)
+            #
+
+    def testGetPythonDataFromRuby(self):
         with sos_kernel() as kc:
             iopub = kc.iopub_channel
             execute(kc=kc, code='''
 null_var = None
 num_var = 123
 import numpy
+import pandas
 num_arr_var = numpy.array([1, 2, 3])
 logic_var = True
 logic_arr_var = [True, False, True]
-char_var = '1"23'
 char_arr_var = ['1', '2', '3']
 list_var = [1, 2, '3']
 dict_var = dict(a=1, b=2, c='3')
 set_var = {1, 2, '3'}
-mat_var = numpy.matrix([[1,2],[3,4]])
 recursive_var = {'a': {'b': 123}, 'c': True}
+comp_var = 1+2j
 ''')
             wait_for_idle(kc)
             execute(kc=kc, code='''
-%use JavaScript
-%get null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var mat_var set_var list_var dict_var recursive_var
+%use Ruby
+%get null_var num_var num_arr_var logic_var logic_arr_var char_arr_var set_var list_var dict_var recursive_var comp_var
 %dict -r
-%put null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var mat_var set_var list_var dict_var recursive_var
+%put null_var num_var num_arr_var logic_var logic_arr_var char_arr_var set_var list_var dict_var recursive_var comp_var
 %use sos
-%dict null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var mat_var set_var list_var dict_var recursive_var
+''')
+            wait_for_idle(kc)
+            execute(kc=kc, code='''
+%dict null_var num_var num_arr_var logic_var logic_arr_var char_arr_var set_var list_var dict_var recursive_var comp_var
 ''')
             res = get_result(iopub)
             self.assertEqual(res['null_var'], None)
@@ -86,46 +151,68 @@ recursive_var = {'a': {'b': 123}, 'c': True}
             self.assertEqual(res['num_arr_var'], [1,2,3])
             self.assertEqual(res['logic_var'], True)
             self.assertEqual(res['logic_arr_var'], [True, False, True])
-            self.assertEqual(res['char_var'], '1"23')
+            #self.assertEqual(res['char_var'], '1"23')
             self.assertEqual(res['char_arr_var'], ['1', '2', '3'])
+            self.assertEqual(res['set_var'], {1, 2, '3'})
             self.assertEqual(res['list_var'], [1,2,'3'])
             self.assertEqual(res['dict_var'], {'a': 1, 'b': 2, 'c': '3'})
-            self.assertEqual(len(res['mat_var']), 2)
+            #self.assertEqual(res['mat_var'].shape, (2, 2))
             self.assertEqual(res['recursive_var'],  {'a': {'b': 123}, 'c': True})
+            self.assertEqual(res['comp_var'], (1+2j))
+            #self.assertEqual(res['seri_var'], [1, 2, 3, 3, 3, 3])
 
-    def testPutJavaScriptDataToPython(self):
+#dataframe
+
+    def testPutRubyDataToPython(self):
         with sos_kernel() as kc:
             iopub = kc.iopub_channel
             # create a data frame
-            execute(kc=kc, code='''
-%use JavaScript
-null_var = null
-num_var = 123
-num_arr_var = [1, 2, 3]
-logic_var = true
-logic_arr_var = [true, false, true]
-char_var = '1\"23'
-char_arr_var = ['1', '2', '3']
-list_var = [1, 2, '3']
-named_list_var = {a:1, b:2, c:3}
-recursive_var = {a:1, b: {c:3, d:'whatever'}}
-''')
+            execute(kc=kc, code="%use Ruby")
             wait_for_idle(kc)
-            execute(kc=kc, code="""
-%put null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var list_var named_list_var recursive_var
-%dict null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var list_var named_list_var recursive_var
-""")
+            execute(kc=kc, code="null_var = nil")
+            wait_for_idle(kc)
+            execute(kc=kc, code="num_var = 123")
+            wait_for_idle(kc)
+            execute(kc=kc, code="num_arr_var = [1, 2, 3]")
+            wait_for_idle(kc)
+            execute(kc=kc, code="logic_var = true")
+            wait_for_idle(kc)
+            execute(kc=kc, code="logic_arr_var = [true, true, false]")
+            wait_for_idle(kc)
+            #execute(kc=kc, code='''char_var = "1\"23"''')
+            #wait_for_idle(kc)
+            execute(kc=kc, code='''char_arr_var = [1, 2, "3"]''')
+            wait_for_idle(kc)
+            execute(kc=kc, code='''mat_var = N[[1, 2], [3, 4]]''')
+            wait_for_idle(kc)
+            execute(kc=kc, code='''recursive_var = {"a"=>1, "b"=>{"c"=>3}, "d"=>"whatever"}''')
+            wait_for_idle(kc)
+            execute(kc=kc, code="comp_var = Complex(1,2)")
+            wait_for_idle(kc)
+            execute(kc=kc, code="single_char_var = 'a'")
+            wait_for_idle(kc)
+            execute(kc=kc, code="%put null_var num_var num_arr_var logic_var logic_arr_var char_arr_var recursive_var comp_var single_char_var")
+            wait_for_idle(kc)
+            execute(kc=kc, code="%use sos")
+#            wait_for_idle(kc)
+#            execute(kc=kc, code='''
+#%use sos
+#named_list_var = list(named_list_var)
+#''')
+            wait_for_idle(kc)
+            execute(kc=kc, code="%dict null_var num_var num_arr_var logic_var logic_arr_var char_arr_var recursive_var comp_var single_char_var")
             res = get_result(iopub)
             self.assertEqual(res['null_var'], None)
             self.assertEqual(res['num_var'], 123)
-            self.assertEqual(res['num_arr_var'], [1,2,3])
+            self.assertEqual(list(res['num_arr_var']), [1,2,3])
             self.assertEqual(res['logic_var'], True)
-            self.assertEqual(res['logic_arr_var'], [True, False, True])
-            self.assertEqual(res['char_var'], '1"23')
-            self.assertEqual(res['char_arr_var'], ['1', '2', '3'])
-            self.assertEqual(res['list_var'], [1,2,'3'])
-            self.assertEqual(res['named_list_var'], {'a': 1, 'b': 2, 'c': 3})
-            self.assertEqual(res['recursive_var'], {'a': 1, 'b': {'c': 3, 'd': 'whatever'}})
+            self.assertEqual(res['logic_arr_var'], [True, True, False])
+            #self.assertEqual(res['char_var'], '1"23')
+            self.assertEqual(res['char_arr_var'], [1, 2, '3'])
+            #self.assertEqual(res['mat_var'].shape, (2,2))
+            self.assertEqual(res['recursive_var'], {'a': 1, 'b': {'c': 3}, 'd': 'whatever'})
+            self.assertEqual(res['comp_var'], 1+2j)
+            self.assertEqual(res['single_char_var'], 'a')
             execute(kc=kc, code="%use sos")
             wait_for_idle(kc)
 
