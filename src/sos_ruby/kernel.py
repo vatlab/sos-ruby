@@ -28,6 +28,8 @@ def __Ruby_py_repr(obj)
     return obj.inspect
   elsif obj.nil?
     return "None"
+  elsif obj.instance_of? Set
+    return "{" + (obj.map { |indivial_var| __Ruby_py_repr(indivial_var) } ).join(",") + "}"
   elsif obj.instance_of? Range
     return "range(" + obj.min().inspect + "," + (obj.max()+1).inspect + ")"
   elsif obj.instance_of? Array
@@ -71,7 +73,7 @@ class sos_Ruby:
         elif isinstance(obj, (int, float)):
             return repr(obj)
         elif isinstance(obj, str):
-            return '"""' + obj + '"""'
+            return '%(' + obj + ')'
         elif isinstance(obj, complex):
             return 'Complex(' + str(obj.real) + ',' + str(obj.imag) + ')'
         elif isinstance(obj, range):
