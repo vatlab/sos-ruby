@@ -34,6 +34,7 @@ before_install:
     - python -m sos_notebook.install
 
     # Ruby
+    - sudo apt-get -f dist-upgrade
     - sudo apt install libtool libffi-dev ruby ruby-dev make
     - sudo apt install libzmq3-dev libzmq-dev
     - gem install cztop iruby
