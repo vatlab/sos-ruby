@@ -167,29 +167,19 @@ comp_var = 1+2j
         with sos_kernel() as kc:
             iopub = kc.iopub_channel
             # create a data frame
-            execute(kc=kc, code="%use Ruby")
-            wait_for_idle(kc)
-            execute(kc=kc, code="null_var = nil")
-            wait_for_idle(kc)
-            execute(kc=kc, code="num_var = 123")
-            wait_for_idle(kc)
-            execute(kc=kc, code="num_arr_var = [1, 2, 3]")
-            wait_for_idle(kc)
-            execute(kc=kc, code="logic_var = true")
-            wait_for_idle(kc)
-            execute(kc=kc, code="logic_arr_var = [true, true, false]")
-            wait_for_idle(kc)
-            #execute(kc=kc, code='''char_var = "1\"23"''')
-            #wait_for_idle(kc)
-            execute(kc=kc, code='''char_arr_var = [1, 2, "3"]''')
-            wait_for_idle(kc)
-            execute(kc=kc, code='''mat_var = N[[1, 2], [3, 4]]''')
-            wait_for_idle(kc)
-            execute(kc=kc, code='''recursive_var = {"a"=>1, "b"=>{"c"=>3}, "d"=>"whatever"}''')
-            wait_for_idle(kc)
-            execute(kc=kc, code="comp_var = Complex(1,2)")
-            wait_for_idle(kc)
-            execute(kc=kc, code="single_char_var = 'a'")
+            execute(kc=kc, code="""\
+%use Ruby
+null_var = nil
+num_var = 123
+num_arr_var = [1, 2, 3]
+logic_var = true
+logic_arr_var = [true, true, false]
+char_arr_var = [1, 2, "3"]
+mat_var = N[[1, 2], [3, 4]]
+recursive_var = {"a"=>1, "b"=>{"c"=>3}, "d"=>"whatever"}
+comp_var = Complex(1,2)
+single_char_var = 'a'
+""")
             wait_for_idle(kc)
             execute(kc=kc, code="%put null_var num_var num_arr_var logic_var logic_arr_var char_arr_var recursive_var comp_var single_char_var")
             wait_for_idle(kc)
