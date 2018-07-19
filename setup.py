@@ -15,7 +15,7 @@ with open('src/sos_ruby/_version.py') as version:
 setup(name = "sos-ruby",
     version = __version__,
     description = 'SoS Notebook extension for Ruby',
-    author = 'Bo Peng',
+    author = 'Man Chong Leong, Bo Peng',
     url = 'https://github.com/vatlab/SOS',
     author_email = 'bpeng@mdanderson.org',
     maintainer = 'Bo Peng',
@@ -38,8 +38,8 @@ setup(name = "sos-ruby",
     packages = find_packages('src'),
     package_dir = {'': 'src'},
     install_requires=[
-          'sos>=0.9.12.0',
-          'sos-notebook>=0.9.10.9',
+          'sos>=0.9.15.3',
+          'sos-notebook>=0.9.15.8',
       ],
     entry_points= '''
 [sos_languages]

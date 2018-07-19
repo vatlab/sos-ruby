@@ -1,4 +1,4 @@
-[![PyPI version](https://badge.fury.io/py/sos-javascript.svg)](https://badge.fury.io/py/sos-ruby)
+[![PyPI version](https://badge.fury.io/py/sos-ruby.svg)](https://badge.fury.io/py/sos-ruby)
 [![Build Status](https://travis-ci.org/vatlab/sos-ruby.svg?branch=master)](https://travis-ci.org/vatlab/sos-ruby)
 
 
