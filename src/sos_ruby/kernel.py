@@ -16,28 +16,28 @@ require 'daru'
 require 'nmatrix'
 
 def __Ruby_py_repr(obj)
-  if obj.instance_of? Integer
+  if obj.is_a? Integer
     return obj.inspect
-  elsif obj.instance_of? String
+  elsif obj.is_a? String
     return obj.inspect
-  elsif obj.instance_of? TrueClass
+  elsif obj.is_a? TrueClass
     return "True"
-  elsif obj.instance_of? FalseClass
+  elsif obj.is_a? FalseClass
     return "False"
-  elsif obj.instance_of? Float
+  elsif obj.is_a? Float
     return obj.inspect
   elsif obj.nil?
     return "None"
-  elsif obj.instance_of? Set
+  elsif obj.is_a? Set
     return "{" + (obj.map { |indivial_var| __Ruby_py_repr(indivial_var) } ).join(",") + "}"
-  elsif obj.instance_of? Range
+  elsif obj.is_a? Range
     return "range(" + obj.min().inspect + "," + (obj.max()+1).inspect + ")"
-  elsif obj.instance_of? Array
+  elsif obj.is_a? Array
     return '[' + (obj.map { |indivial_var| __Ruby_py_repr(indivial_var) } ).join(",") + ']'
-  elsif obj.instance_of? Hash
+  elsif obj.is_a? Hash
     _beginning_result_string_hash_from_ruby = "{"
     _context_result_string_hash_from_ruby = (obj.keys.map do |x|
-                                              if obj[x].instance_of? Array then
+                                              if obj[x].is_a? Array then
                                                   "\"" + x.to_s + "\":" + (obj[x].to_a.map { |y|  eval(__Ruby_py_repr(y)) }).to_s
                                               else
                                                   "\"" + x.to_s + "\":" + (__Ruby_py_repr(obj[x])).to_s
@@ -45,15 +45,15 @@ def __Ruby_py_repr(obj)
                                             end).join(",") + "}"
     _result_string_hash_from_ruby = _beginning_result_string_hash_from_ruby + _context_result_string_hash_from_ruby
     return _result_string_hash_from_ruby
-  elsif obj.instance_of? Daru::DataFrame
+  elsif obj.is_a? Daru::DataFrame
     _beginning_result_string_dataframe_from_ruby = "pandas.DataFrame(" + "{"
     _context_result_string_dataframe_from_ruby = (obj.vectors.to_a.map { |x| "\"" + x.to_s + "\":" + (obj[x].to_a.map { |y|  eval(__Ruby_py_repr(y)) }).to_s } ).join(",")
     _indexing_result_string_dataframe_from_ruby = "}," + "index=" + obj.index.to_a.to_s + ")"
     _result_string_dataframe_from_ruby = _beginning_result_string_dataframe_from_ruby + _context_result_string_dataframe_from_ruby + _indexing_result_string_dataframe_from_ruby
     return _result_string_dataframe_from_ruby
-  elsif obj.instance_of? NMatrix
+  elsif obj.is_a? NMatrix
     return "numpy.matrix(" + obj.to_a.to_s + ")"
-  elsif obj.instance_of? Complex
+  elsif obj.is_a? Complex
     return "complex(" + obj.real.inspect + "," + obj.imaginary.inspect + ")"
   else
     return "'Untransferrable variable'"
