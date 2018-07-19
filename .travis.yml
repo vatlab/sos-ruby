@@ -22,7 +22,7 @@ before_install:
     - conda create -n python_test python=$TRAVIS_PYTHON_VERSION anaconda
     - source activate python_test
 
-    - pip install docker rq
+    - pip install docker
     - pip install pyyaml psutil tqdm nose
     - pip install fasteners pygments networkx pydot pydotplus 
     - pip install entrypoints jupyter coverage codacy-coverage pytest pytest-cov python-coveralls
@@ -34,7 +34,6 @@ before_install:
     - python -m sos_notebook.install
 
     # Ruby
-    - sudo apt-get -f dist-upgrade
     - sudo apt install libtool libffi-dev ruby ruby-dev make
     - sudo apt install libzmq3-dev libzmq-dev
     - gem install cztop iruby
