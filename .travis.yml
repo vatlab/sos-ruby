@@ -33,9 +33,15 @@ before_install:
     - pip install pygments ipython wand graphviz sos sos-bash sos-notebook sos-python
     - python -m sos_notebook.install
 
-    # Ruby
+    # Ruby, need to install czmq from source for travis (Ubuntu 14)
     - sudo apt install libtool libffi-dev ruby ruby-dev make
-    - sudo apt install libzmq3-dev libczmq-dev
+    - sudo apt install git libzmq-dev autoconf pkg-config
+    - git clone https://github.com/zeromq/czmq
+    - cd czmq
+    - ./autogen.sh && ./configure && sudo make && sudo make install
+    - cd ..
+    #- sudo apt install libtool libffi-dev ruby ruby-dev make
+    #- sudo apt install libzmq3-dev libczmq-dev
     - gem install cztop iruby
     - gem install daru nmatrix
     - iruby register --force
