@@ -35,14 +35,15 @@ before_install:
 
     # Ruby
     - sudo apt install libtool libffi-dev ruby ruby-dev make
-    - sudo apt install libzmq3-dev libzmq-dev
+    - sudo apt install libzmq3-dev libczmq-dev
     - gem install cztop iruby
+    - gem install daru nmatrix
     - iruby register --force
 
 sudo: required
 services:
     - docker
-install: "python setup.py install"
+install: "pip install . -U"
 before_script:
     - cd test
 script:
