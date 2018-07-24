@@ -131,20 +131,21 @@ char_arr_var = ['1', '2', '3']
 list_var = [1, 2, '3']
 dict_var = dict(a=1, b=2, c='3')
 set_var = {1, 2, '3'}
+mat_var = numpy.matrix([[1,2],[3,4]])
 recursive_var = {'a': {'b': 123}, 'c': True}
 comp_var = 1+2j
 ''')
             wait_for_idle(kc)
             execute(kc=kc, code='''
 %use Ruby
-%get null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var set_var list_var dict_var recursive_var comp_var
+%get null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var set_var list_var dict_var mat_var recursive_var comp_var
 %dict -r
-%put null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var set_var list_var dict_var recursive_var comp_var
+%put null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var set_var list_var dict_var mat_var recursive_var comp_var
 %use sos
 ''')
             wait_for_idle(kc)
             execute(kc=kc, code='''
-%dict null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var set_var list_var dict_var recursive_var comp_var
+%dict null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var set_var list_var dict_var mat_var recursive_var comp_var
 ''')
             res = get_result(iopub)
             self.assertEqual(res['null_var'], None)
@@ -157,7 +158,7 @@ comp_var = 1+2j
             self.assertEqual(res['set_var'], {1, 2, '3'})
             self.assertEqual(res['list_var'], [1,2,'3'])
             self.assertEqual(res['dict_var'], {'a': 1, 'b': 2, 'c': '3'})
-            #self.assertEqual(res['mat_var'].shape, (2, 2))
+            self.assertEqual(res['mat_var'].shape, (2, 2))
             self.assertEqual(res['recursive_var'],  {'a': {'b': 123}, 'c': True})
             self.assertEqual(res['comp_var'], (1+2j))
             #self.assertEqual(res['seri_var'], [1, 2, 3, 3, 3, 3])
