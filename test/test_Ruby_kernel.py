@@ -137,14 +137,14 @@ comp_var = 1+2j
             wait_for_idle(kc)
             execute(kc=kc, code='''
 %use Ruby
-%get null_var num_var num_arr_var logic_var logic_arr_var char_arr_var set_var list_var dict_var recursive_var comp_var
+%get null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var set_var list_var dict_var recursive_var comp_var
 %dict -r
-%put null_var num_var num_arr_var logic_var logic_arr_var char_arr_var set_var list_var dict_var recursive_var comp_var
+%put null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var set_var list_var dict_var recursive_var comp_var
 %use sos
 ''')
             wait_for_idle(kc)
             execute(kc=kc, code='''
-%dict null_var num_var num_arr_var logic_var logic_arr_var char_arr_var set_var list_var dict_var recursive_var comp_var
+%dict null_var num_var num_arr_var logic_var logic_arr_var char_var char_arr_var set_var list_var dict_var recursive_var comp_var
 ''')
             res = get_result(iopub)
             self.assertEqual(res['null_var'], None)
