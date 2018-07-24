@@ -126,6 +126,7 @@ import pandas
 num_arr_var = numpy.array([1, 2, 3])
 logic_var = True
 logic_arr_var = [True, False, True]
+char_var = '1"23'
 char_arr_var = ['1', '2', '3']
 list_var = [1, 2, '3']
 dict_var = dict(a=1, b=2, c='3')
@@ -151,7 +152,7 @@ comp_var = 1+2j
             self.assertEqual(res['num_arr_var'], [1,2,3])
             self.assertEqual(res['logic_var'], True)
             self.assertEqual(res['logic_arr_var'], [True, False, True])
-            #self.assertEqual(res['char_var'], '1"23')
+            self.assertEqual(res['char_var'], '1"23')
             self.assertEqual(res['char_arr_var'], ['1', '2', '3'])
             self.assertEqual(res['set_var'], {1, 2, '3'})
             self.assertEqual(res['list_var'], [1,2,'3'])
