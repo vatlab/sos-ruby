@@ -25,7 +25,7 @@ setup(name = "sos-ruby",
     classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: Console',
-        'License :: OSI Approved :: BSD',
+        'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
         'Operating System :: MacOS :: MacOS X',
@@ -38,8 +38,8 @@ setup(name = "sos-ruby",
     packages = find_packages('src'),
     package_dir = {'': 'src'},
     install_requires=[
-          'sos>=0.9.15.3',
-          'sos-notebook>=0.9.15.8',
+          'sos>=0.18.0',
+          'sos-notebook>=0.18.0',
       ],
     entry_points= '''
 [sos_languages]
