@@ -4,7 +4,7 @@
 # Distributed under the terms of the 3-clause BSD License.
 
 from collections import Sequence
-from sos.utils import short_repr, env, log_to_file
+from sos.utils import short_repr, env
 import numpy
 import pandas
 import json
