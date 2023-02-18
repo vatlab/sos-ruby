@@ -3,11 +3,12 @@
 # Copyright (c) Bo Peng and the University of Texas MD Anderson Cancer Center
 # Distributed under the terms of the 3-clause BSD License.
 
-from collections import Sequence
-from sos.utils import short_repr, env
+import json
+from collections.abc import Sequence
+
 import numpy
 import pandas
-import json
+from sos.utils import env, short_repr
 
 Ruby_init_statement = r'''
 
@@ -82,72 +83,69 @@ class sos_Ruby:
     def _Ruby_repr(self, obj):
         if isinstance(obj, bool):
             return 'true' if obj else 'false'
-        elif isinstance(obj, float) and numpy.isnan(obj):
+        if isinstance(obj, float) and numpy.isnan(obj):
             return "Float::NAN"
-        elif isinstance(obj, (int, float)):
+        if isinstance(obj, (int, float)):
             return repr(obj)
-        elif isinstance(obj, str):
+        if isinstance(obj, str):
             return '%(' + obj + ')'
-        elif isinstance(obj, complex):
+        if isinstance(obj, complex):
             return 'Complex(' + str(obj.real) + ',' + str(obj.imag) + ')'
-        elif isinstance(obj, range):
+        if isinstance(obj, range):
             return '(' + repr(min(obj)) + '...' + repr(max(obj)) + ')'
-        elif isinstance(obj, Sequence):
+        if isinstance(obj, Sequence):
             if len(obj) == 0:
                 return '[]'
-            else:
-                return '[' + ','.join(self._Ruby_repr(x) for x in obj) + ']'
-        elif obj is None:
+            return '[' + ','.join(self._Ruby_repr(x) for x in obj) + ']'
+        if obj is None:
             return 'nil'
-        elif isinstance(obj, dict):
-            return '{' + ','.join('"{}" => {}'.format(x, self._Ruby_repr(y)) for x, y in obj.items()) + '}'
-        elif isinstance(obj, set):
+        if isinstance(obj, dict):
+            return '{' + ','.join(f'"{x}" => {self._Ruby_repr(y)}' for x, y in obj.items()) + '}'
+        if isinstance(obj, set):
             return 'Set[' + ','.join(self._Ruby_repr(x) for x in obj) + ']'
-        else:
-            if isinstance(obj, (numpy.intc, numpy.intp, numpy.int8, numpy.int16, numpy.int32, numpy.int64,\
-                    numpy.uint8, numpy.uint16, numpy.uint32, numpy.uint64, numpy.float16, numpy.float32, numpy.float64)):
-                return repr(obj)
-            elif isinstance(obj, numpy.matrixlib.defmatrix.matrix):
-                return 'N' + repr(obj.tolist())
-            elif isinstance(obj, numpy.ndarray):
-                return repr(obj.tolist())
-            elif isinstance(obj, pandas.DataFrame):
-                _beginning_result_string_dataframe_to_ruby = "Daru::DataFrame.new({"
-                _context_string_dataframe_to_ruby = str(['"'
-                                                        + str(x).replace("'", '"')
-                                                        + '"'
-                                                        + "=>"
-                                                        + "["
-                                                        + str(
-                                                            ",".join(
-                                                                list(
-                                                                map(
-                                                                    lambda y: self._Ruby_repr(y),
-                                                                       obj[x].tolist()
-                                                                )
+        if isinstance(obj, (numpy.intc, numpy.intp, numpy.int8, numpy.int16, numpy.int32, numpy.int64,\
+                numpy.uint8, numpy.uint16, numpy.uint32, numpy.uint64, numpy.float16, numpy.float32, numpy.float64)):
+            return repr(obj)
+        if isinstance(obj, numpy.matrixlib.defmatrix.matrix):
+            return 'N' + repr(obj.tolist())
+        if isinstance(obj, numpy.ndarray):
+            return repr(obj.tolist())
+        if isinstance(obj, pandas.DataFrame):
+            _beginning_result_string_dataframe_to_ruby = "Daru::DataFrame.new({"
+            _context_string_dataframe_to_ruby = str(['"'
+                                                    + str(x).replace("'", '"')
+                                                    + '"'
+                                                    + "=>"
+                                                    + "["
+                                                    + str(
+                                                        ",".join(
+                                                            list(
+                                                            map(
+                                                                lambda y: self._Ruby_repr(y),
+                                                                    obj[x].tolist()
                                                             )
-                                                            )
-                                                        ).replace("'", '"') + "]"
-                                                        for x in obj.keys().tolist()])[2:-2].replace("\', \'", ", ") + "},"
-                _indexing_result_string_dataframe_to_ruby = "index:" + str(obj.index.values.tolist()).replace("'", '"') + ")"
-                _result_string_dataframe_to_ruby = _beginning_result_string_dataframe_to_ruby + _context_string_dataframe_to_ruby + _indexing_result_string_dataframe_to_ruby
-                return _result_string_dataframe_to_ruby
-            elif isinstance(obj, pandas.Series):
-                dat=list(obj.values)
-                ind=list(obj.index.values)
-                ans="{" + ",".join([repr(x) + "=>" + repr(y) for x, y in zip(ind, dat)]) + "}"
-                return ans
-            else:
-                return repr('Unsupported datatype {}'.format(short_repr(obj)))
+                                                        )
+                                                        )
+                                                    ).replace("'", '"') + "]"
+                                                    for x in obj.keys().tolist()])[2:-2].replace("\', \'", ", ") + "},"
+            _indexing_result_string_dataframe_to_ruby = "index:" + str(obj.index.values.tolist()).replace("'", '"') + ")"
+            _result_string_dataframe_to_ruby = _beginning_result_string_dataframe_to_ruby + _context_string_dataframe_to_ruby + _indexing_result_string_dataframe_to_ruby
+            return _result_string_dataframe_to_ruby
+        if isinstance(obj, pandas.Series):
+            dat=list(obj.values)
+            ind=list(obj.index.values)
+            ans="{" + ",".join([repr(x) + "=>" + repr(y) for x, y in zip(ind, dat)]) + "}"
+            return ans
+        return repr(f'Unsupported datatype {short_repr(obj)}')
 
-    def get_vars(self, names):
+    async def get_vars(self, names, as_var=None):
         for name in names:
-            newname = name
+            newname = as_var if as_var else name
             ruby_repr = self._Ruby_repr(env.sos_dict[name])
-            self.sos_kernel.run_cell('{} = {}'.format(newname, ruby_repr), True, False,
-                                     on_error='Failed to put variable {} to Ruby'.format(name))
+            await self.sos_kernel.run_cell(f'{newname} = {ruby_repr}', True, False,
+                                     on_error=f'Failed to put variable {name} to Ruby')
 
-    def put_vars(self, items, to_kernel=None):
+    def put_vars(self, items, to_kernel=None, as_var=None):
         # first let us get all variables with names starting with sos
         try:
             response = self.sos_kernel.get_response('print local_variables', ('stream',), name=('stdout',))[0][1]
@@ -158,16 +156,16 @@ class sos_Ruby:
             pass
         res = {}
         for item in items:
-            py_repr = 'print(__Ruby_py_repr({}))'.format(item)
+            py_repr = f'print(__Ruby_py_repr({item}))'
             response = self.sos_kernel.get_response(py_repr, ('stream',), name=('stdout',))[0][1]
             expr = response['text']
             self.sos_kernel.warn(repr(expr))
 
             try:
                 # evaluate as raw string to correctly handle \\ etc
-                res[item] = eval(expr)
+                res[as_var if as_var else item] = eval(expr)
             except Exception as e:
-                self.sos_kernel.warn('Failed to evaluate {!r}: {}'.format(expr, e))
+                self.sos_kernel.warn(f'Failed to evaluate {expr!r}: {e}')
                 return None
         return res
 

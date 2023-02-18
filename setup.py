@@ -39,11 +39,10 @@ setup(name = "sos-ruby",
     package_dir = {'': 'src'},
     install_requires=[
           'sos>=0.18.0',
-          'sos-notebook>=0.18.0',
+          'sos-notebook>=0.24.0',
       ],
     entry_points= '''
 [sos_languages]
 Ruby = sos_ruby.kernel:sos_Ruby
 '''
 )
-

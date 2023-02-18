@@ -29,9 +29,11 @@
 #
 import os
 import unittest
+
 from ipykernel.tests.utils import execute, wait_for_idle
-from sos_notebook.test_utils import sos_kernel, get_result, get_display_data, \
-    clear_channels, get_std_output
+from sos_notebook.test_utils import (clear_channels, get_display_data,
+                                     get_result, get_std_output, sos_kernel)
+
 
 class TestRubyKernel(unittest.TestCase):
     #
